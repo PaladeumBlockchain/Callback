@@ -1,15 +1,8 @@
 from flask import Flask, render_template
-from webargs.flaskparser import use_args
 from flask_socketio import join_room
 from flask_socketio import SocketIO
-from webargs import fields
 from flask import request
 import config
-
-callback_args = {
-    "signature": fields.Str(required=True),
-    "address": fields.Str(required=True),
-}
 
 
 def create_app():
@@ -28,9 +21,8 @@ def create_app():
             return {"name": config.name, "icon": config.icon}
 
         @app.route("/call/<string:session>", methods=["POST"])
-        @use_args(callback_args, location="json")
-        def call(args, session):
-            socketio.emit(session, args, to=session)
+        def call(session):
+            socketio.emit(session, request.json, to=session)
             return {"status": "success"}
 
         @socketio.on("callback")
